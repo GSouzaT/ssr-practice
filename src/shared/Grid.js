@@ -1,9 +1,37 @@
 import * as React from "react";
+import { useParams } from "react-router-dom";
 
-export default function Grid({ data }) {
+export default function Grid({ fetchInitialData, data }) {
+  const [repos, setRepos] = React.useState(() => {
+    return __isBrowser__ ? window.__INITIAL_DATA__ : data;
+  });
+
+  const [loading, setLoading] = React.useState(repos ? false : true);
+
+  const fetchNewRwpos = React.useRef(repos ? false : true);
+
+  const { id } = useParams();
+
+  React.useEffect(() => {
+    if (fetchNewRwpos.current === true) {
+      setLoading(true);
+
+      fetchInitialData(id).then((repos) => {
+        setRepos(repos);
+        setLoading(false);
+      });
+    } else {
+      fetchNewRwpos.current = true;
+    }
+  }, [id]);
+
+  if (loading === true) {
+    return <i className="loading">🤹‍♂️</i>;
+  }
+
   return (
     <ul className="grid">
-      {data.map(({ name, owner, stargazers_count, html_url }, i) => (
+      {repos.map(({ name, owner, stargazers_count, html_url }, i) => (
         <li key={name}>
           <h2>#{i + 1}</h2>
           <h3>
